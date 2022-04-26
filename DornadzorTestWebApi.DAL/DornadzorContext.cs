@@ -23,7 +23,6 @@ namespace DornadzorTestWebApi.DAL
                     new Role() { Id = 1, Name ="USer"},
                     new Role() { Id = 2, Name ="Admin"}
                 });
-
         }
     }
 }
