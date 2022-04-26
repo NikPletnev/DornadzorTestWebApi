@@ -1,3 +1,6 @@
+using DornadzorTestWebApi.API.Extensions;
+using DornadzorTestWebApi.API.Infrastructure;
+using DornadzorTestWebApi.BLL.Configs;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -26,8 +29,11 @@ namespace DornadzorTestWebApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
+            services.AddAutoMapper(typeof(BuisnessMapper).Assembly);
             services.AddControllers();
+            services.RegisterDornadzorServices();
+            services.RegisterDornadzorRepositories();
+            services.AddConnectionString();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "DornadzorTestWebApi", Version = "v1" });
@@ -49,6 +55,8 @@ namespace DornadzorTestWebApi
             app.UseRouting();
 
             app.UseAuthorization();
+
+            app.UseMiddleware<GlobalExeptionHandler>();
 
             app.UseEndpoints(endpoints =>
             {

@@ -1,4 +1,6 @@
 ﻿using DornadzorTestWebApi.DAL.Entity;
+using DornadzorTestWebApi.DAL.Repositores.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace DornadzorTestWebApi.DAL.Repositores
 {
-    public class OrderRepository : IOrderRepository
+    public class OrderRepository : IRepository<Order>
     {
         private readonly DornadzorContext _context;
 
@@ -16,30 +18,43 @@ namespace DornadzorTestWebApi.DAL.Repositores
             _context = context;
         }
 
-        public Order GetOrderById(int id) =>
-            _context.Orders
-            .FirstOrDefault(x => x.Id == id);
+        public async Task<Order> GetById(int id) =>
+            await _context.Orders
+            .FirstOrDefaultAsync(x => x.Id == id);
 
-        public int AddOrder(Order order)
+        public async Task<int> Add(Order order)
         {
-            _context.Add(order);
-            _context.SaveChanges();
+            await _context.AddAsync(order);
+            await _context.SaveChangesAsync();
             return order.Id;
         }
 
-        public void UpdateOrder(Order entity, Order order)
+        public async Task Update(Order entity, Order model)
         {
-            entity.Name = order.Name;
-            entity.Description = order.Description;
-            entity.Price = order.Price;
-            entity.User = order.User;
-            _context.SaveChanges();
+            entity.Name = model.Name;
+            entity.Description = model.Description;
+            entity.Price = model.Price;
+            entity.User = model.User;
+            await _context.SaveChangesAsync();
         }
 
-        public void DeleteOrder(Order entity)
+        public async Task Delete(Order entity)
         {
             _context.Orders.Remove(entity);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
+
+        public async Task Delete(int id)
+        {
+            var entity = await _context.Orders.FirstOrDefaultAsync(x => x.Id == id);
+            _context.Orders.Remove(entity);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<Order>> GetAll()
+        {
+            return await _context.Orders.ToListAsync();
+        }
+
     }
 }

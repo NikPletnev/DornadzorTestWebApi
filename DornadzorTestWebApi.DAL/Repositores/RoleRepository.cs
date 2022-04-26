@@ -1,4 +1,6 @@
 ﻿using DornadzorTestWebApi.DAL.Entity;
+using DornadzorTestWebApi.DAL.Repositores.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace DornadzorTestWebApi.DAL.Repositores
 {
-    public class RoleRepository : IRoleRepository
+    public class RoleRepository : IRepository<Role>
     {
         private readonly DornadzorContext _context;
 
@@ -16,27 +18,40 @@ namespace DornadzorTestWebApi.DAL.Repositores
             _context = context;
         }
 
-        public Role GetRoleById(int id) =>
-            _context.Roles
-            .FirstOrDefault(x => x.Id == id);
+        public async Task<Role> GetById(int id) =>
+            await _context.Roles
+            .FirstOrDefaultAsync(x => x.Id == id);
 
-        public int AddRole(Role role)
+        public async Task<int> Add(Role role)
         {
-            _context.Add(role);
-            _context.SaveChanges();
+            await _context.AddAsync(role);
+            await _context.SaveChangesAsync();
             return role.Id;
         }
 
-        public void UpdateRole(Role entity, Role role)
+        public async Task Update(Role entity, Role model)
         {
-            entity.Name = role.Name;
-            _context.SaveChanges();
+            entity.Name = model.Name;
+            await _context.SaveChangesAsync();
         }
 
-        public void DeleteRole(Role entity)
+        public async Task Delete(Role entity)
         {
             _context.Roles.Remove(entity);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
+
+        public async Task Delete(int id)
+        {
+            var role = await _context.Roles.FirstOrDefaultAsync(x => x.Id == id);
+            _context.Remove(role);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<Role>> GetAll()
+        {
+            return await _context.Roles.ToListAsync();
+        }
+
     }
 }

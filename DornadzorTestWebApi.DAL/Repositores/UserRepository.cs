@@ -1,10 +1,13 @@
 ﻿using DornadzorTestWebApi.DAL.Entity;
+using DornadzorTestWebApi.DAL.Repositores.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace DornadzorTestWebApi.DAL.Repositores
 {
-    public class UserRepository : IUserRepository
+    public class UserRepository : IRepository<User>
     {
         private readonly DornadzorContext _context;
 
@@ -13,31 +16,43 @@ namespace DornadzorTestWebApi.DAL.Repositores
             _context = context;
         }
 
-        public User GetUserById(int id) =>
-            _context.Users
+        public async Task<User> GetById(int id) =>
+            await _context.Users
             .Include(w => w.Orders)
-            .FirstOrDefault(x => x.Id == id);
+            .FirstOrDefaultAsync(x => x.Id == id);
 
-        public int AddUser(User user)
+        public async Task<int> Add(User user)
         {
-            _context.Add(user);
-            _context.SaveChanges();
+            await _context.AddAsync(user);
+            await _context.SaveChangesAsync();
             return user.Id;
         }
 
-        public void UpdateUser(User entity, User user)
+        public async Task Update(User entity, User model)
         {
-            entity.Name = user.Name;
-            entity.Age = user.Age;
-            entity.Role = user.Role;
-            entity.Orders = user.Orders;
-            _context.SaveChanges();
+            entity.Name = model.Name;
+            entity.Age = model.Age;
+            entity.Role = model.Role;
+            entity.Orders = model.Orders;
+            await _context.SaveChangesAsync();
         }
 
-        public void DeleteUser(User entity)
+        public async Task Delete(User entity)
         {
             _context.Users.Remove(entity);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
+
+        public async Task Delete(int id)
+        {
+            var entity = await _context.Users.FirstOrDefaultAsync(x => x.Id == id);
+            _context.Remove(entity);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<User>> GetAll() =>
+            await _context.Users.ToListAsync();
+
+
     }
 }
